@@ -1,7 +1,7 @@
 # Office-Dashboard
 Login System
 
-Overview
+#Overview
 
 This project is a secure and user-friendly login system built using:
 
@@ -13,7 +13,7 @@ API Requests: Axios
 
 The system supports email-based authentication with password validation and error handling. To enhance security, only company emails are allowed, while Gmail and Outlook addresses are blocked.
 
-Features
+*Features*
 
 Company email-based authentication
 
@@ -27,7 +27,7 @@ Secure token storage in localStorage
 
 Responsive UI
 
-Installation
+*Installation*
 
 Clone the repository:
 
@@ -37,7 +37,7 @@ Navigate to the project folder:
 
 cd project-directory
 
-Install dependencies:
+*Install dependencies:
 
 npm install
 
@@ -51,7 +51,7 @@ Open your browser and go to:
 
 http://localhost:5173
 
-Usage Guide
+*Usage Guide*
 
 Logging In
 
@@ -65,7 +65,7 @@ If the credentials are correct, you will be redirected to the dashboard.
 
 If there is an error, a message will be displayed.
 
-Challenges & Solutions
+*Challenges & Solutions*
 
 1. Blocking Certain Email Domains
 
@@ -82,7 +82,7 @@ Solution: Added a validation system to check for length, uppercase/lowercase let
 Issue: Lack of feedback during login attempts.
 Solution: Implemented real-time error messages and loading indicators.
 
-Future Improvements
+*Future Improvements*
 
 Add a password reset feature.
 
@@ -92,7 +92,7 @@ Enhance security by improving token storage.
 
 Further improve UI responsiveness and accessibility.
 
-License
+*License*
 
 This project is open-source and available under the MIT License.
 
