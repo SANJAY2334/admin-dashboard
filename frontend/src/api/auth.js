@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: '/api/auth', // Uses Vite proxy to avoid CORS issues
+  baseURL: '/api/auth', 
 });
 
 export const login = async (email, password) => {
