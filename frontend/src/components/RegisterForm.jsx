@@ -15,7 +15,7 @@ const RegisterForm = () => {
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
-  // Validation functions
+  
   const validateEmail = (email) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
@@ -44,7 +44,7 @@ const RegisterForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage(""); // Reset message before request
+    setMessage(""); 
 
     if (validateForm()) {
       try {
