@@ -42,13 +42,12 @@ const Dashboard = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-950 text-white">
-      {/* Sidebar */}
       <aside
         className={`${
           sidebarOpen ? "w-80" : "w-20"
         } bg-gray-900 p-6 shadow-lg transition-all duration-300 flex flex-col`}
       >
-        {/* Toggle Button */}
+        
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
           className="mb-6 text-white flex items-center gap-2 p-2 rounded-lg hover:bg-gray-800 transition-all"
@@ -57,7 +56,7 @@ const Dashboard = () => {
           {sidebarOpen && <span className="text-lg font-medium">Menu</span>}
         </button>
 
-        {/* Sidebar Content */}
+        
         <h2
           className={`text-4xl font-bold text-center transition-all ${
             !sidebarOpen && "hidden"
@@ -90,15 +89,15 @@ const Dashboard = () => {
         </nav>
       </aside>
 
-      {/* Main Content */}
+      
       <main className="flex-1 p-12 bg-gray-100 text-gray-900 relative">
-        {/* Header */}
+        
         <div className="flex justify-between items-center">
           <h1 className="text-5xl font-bold">
             Welcome Back, <span className="text-blue-600">{userName}!</span>
           </h1>
 
-          {/* User Dropdown */}
+          
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -135,7 +134,7 @@ const Dashboard = () => {
           Here’s an overview of your account.
         </p>
 
-        {/* Stats Section */}
+        
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-12 mt-20">
           {[
             { title: "Total Users", count: "1,230", color: "text-blue-600", icon: <FiUsers /> },
