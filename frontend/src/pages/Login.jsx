@@ -141,6 +141,9 @@ const Login = () => {
           >
             {loading ? <span className="animate-spin border-2 border-white rounded-full w-5 h-5 border-t-transparent"></span> : "Login"}
           </button>
+          <p className="text-gray-400 text-center mt-2">
+            Don't have an account? <a href="/register" className="text-blue-400 hover:underline">Create one</a>
+          </p>
         </form>
       </div>
     </div>
