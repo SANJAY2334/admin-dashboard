@@ -1,5 +1,5 @@
 app.post("/api/auth/register", (req, res) => {
-    console.log("Received Data:", req.body);  // Log request body
+    console.log("Received Data:", req.body);  
     
     const { username, name, email, password } = req.body;
   
@@ -7,6 +7,6 @@ app.post("/api/auth/register", (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
   
-    res.send("Received");  // Temporary response
+    res.send("Received");  
   });
   
