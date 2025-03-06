@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   FiHome,
   FiSettings,
@@ -23,15 +23,16 @@ const Dashboard = () => {
     const token = localStorage.getItem("token");
     if (!token) {
       navigate("/login");
+      return;
     }
 
     const storedUserName = localStorage.getItem("username");
-    if (storedUserName) {
+    if (storedUserName && storedUserName !== "null" && storedUserName !== "undefined") {
       setUserName(storedUserName);
     }
 
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      if (!dropdownRef.current?.contains(event.target)) {
         setDropdownOpen(false);
       }
     };
@@ -40,14 +41,16 @@ const Dashboard = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [navigate]);
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("username");
+    navigate("/login");
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-950 text-white">
       {/* Sidebar */}
-      <aside
-        className={`${
-          sidebarOpen ? "w-80" : "w-20"
-        } bg-gray-900 p-6 shadow-lg transition-all duration-300 flex flex-col`}
-      >
+      <aside className={`${sidebarOpen ? "w-64" : "w-20"} bg-gray-900 p-6 shadow-lg transition-all duration-300 flex flex-col`}>
         {/* Toggle Button */}
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -58,34 +61,29 @@ const Dashboard = () => {
         </button>
 
         {/* Sidebar Content */}
-        <h2
-          className={`text-4xl font-bold text-center transition-all ${
-            !sidebarOpen && "hidden"
-          }`}
-        >
-          Dashboard
-        </h2>
-        <p
-          className={`text-center text-gray-400 text-lg mt-1 transition-all ${
-            !sidebarOpen && "hidden"
-          }`}
-        >
-          Welcome, <span className="text-white font-semibold">{userName}</span>
-        </p>
+        {sidebarOpen && (
+          <>
+            <h2 className="text-4xl font-bold text-center">Dashboard</h2>
+            <p className="text-center text-gray-400 text-lg mt-1">
+              Welcome, <span className="text-white font-semibold">{userName}</span>
+            </p>
+          </>
+        )}
 
         <nav className="mt-8 space-y-4">
           {[
             { name: "Home", path: "/dashboard", icon: <FiHome /> },
+            { name: "Profile", path: "/profile", icon: <FiUser /> },
             { name: "Settings", path: "/settings", icon: <FiSettings /> },
           ].map((item, index) => (
-            <a
+            <Link
               key={index}
-              href={item.path}
+              to={item.path}
               className="flex items-center gap-4 px-5 py-4 text-lg font-medium rounded-lg hover:bg-gray-800 transition-all"
             >
               {item.icon}
               {sidebarOpen && <span>{item.name}</span>}
-            </a>
+            </Link>
           ))}
         </nav>
       </aside>
@@ -110,18 +108,14 @@ const Dashboard = () => {
 
             {dropdownOpen && (
               <div className="absolute right-0 mt-2 w-48 bg-white text-gray-900 rounded-lg shadow-lg overflow-hidden">
-                <a
-                  href="/profile"
+                <Link
+                  to="/profile"
                   className="flex items-center gap-3 px-5 py-2 hover:bg-gray-200 transition-all"
                 >
                   <FiUser className="text-lg" /> Profile
-                </a>
+                </Link>
                 <button
-                  onClick={() => {
-                    localStorage.removeItem("token");
-                    localStorage.removeItem("username");
-                    navigate("/login");
-                  }}
+                  onClick={handleLogout}
                   className="w-full flex items-center gap-3 px-5 py-3 text-left hover:bg-gray-200 transition-all"
                 >
                   <FiLogOut className="text-lg" /> Logout
@@ -131,9 +125,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <p className="text-gray-600 mt-4 text-xl">
-          Here’s an overview of your account.
-        </p>
+        <p className="text-gray-600 mt-4 text-xl">Here’s an overview of your account.</p>
 
         {/* Stats Section */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-12 mt-20">

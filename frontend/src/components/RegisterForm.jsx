@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 const RegisterForm = () => {
   const [formData, setFormData] = useState({
     username: "",
-    name: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -26,11 +25,9 @@ const RegisterForm = () => {
     const newErrors = {};
 
     if (!formData.username.trim()) newErrors.username = "Username is required.";
-    if (!formData.name.trim()) newErrors.name = "Name is required.";
     if (!validateEmail(formData.email)) newErrors.email = "Invalid email format.";
     if (!validatePassword(formData.password))
-      newErrors.password =
-        "Password must be 8+ characters, 1 uppercase, 1 lowercase, 1 number, 1 special character.";
+      newErrors.password = "Password must be 8+ characters, 1 uppercase, 1 lowercase, 1 number, 1 special character.";
     if (formData.password !== formData.confirmPassword)
       newErrors.confirmPassword = "Passwords do not match.";
 
@@ -52,16 +49,16 @@ const RegisterForm = () => {
         setMessage("User registered successfully!");
         console.log("User registered:", response.data);
 
-        
+        // Store user data
         localStorage.setItem("username", formData.username);
 
-        
-        setFormData({ username: "", name: "", email: "", password: "", confirmPassword: "" });
+        // Reset form
+        setFormData({ username: "", email: "", password: "", confirmPassword: "" });
 
-        
+        // Redirect
         navigate("/dashboard");
       } catch (error) {
-        setMessage("Registration failed! " + (error.response?.data?.message || error.message));
+        setMessage(error.response?.data?.message || "Registration failed");
         console.error("Registration failed:", error.response?.data || error.message);
       }
     } else {
@@ -72,73 +69,32 @@ const RegisterForm = () => {
   return (
     <div className="max-w-md mx-auto p-6 bg-gray-100 shadow-md rounded-md">
       <h2 className="text-xl font-semibold mb-4">Register</h2>
-      {message && <p className="text-sm text-red-600 mb-4">{message}</p>}
+      {message && <p className={`text-sm mb-4 ${message.includes("success") ? "text-green-600" : "text-red-600"}`}>{message}</p>}
 
       <form onSubmit={handleSubmit} className="flex flex-col space-y-3">
-        
-        <input
-          type="text"
-          name="username"
-          placeholder="Username"
-          value={formData.username}
-          onChange={handleChange}
-          required
-          className={`p-2 border rounded ${errors.username ? "border-red-600" : "border-gray-300"}`}
-        />
-        {errors.username && <p className="text-red-600 text-sm">{errors.username}</p>}
+        {[
+          { name: "username", type: "text", placeholder: "Username" },
+          { name: "email", type: "email", placeholder: "Email" },
+          { name: "password", type: "password", placeholder: "Password" },
+          { name: "confirmPassword", type: "password", placeholder: "Confirm Password" },
+        ].map(({ name, type, placeholder }) => (
+          <div key={name}>
+            <input
+              type={type}
+              name={name}
+              placeholder={placeholder}
+              value={formData[name]}
+              onChange={handleChange}
+              required
+              className={`p-2 border rounded w-full ${errors[name] ? "border-red-600" : "border-gray-300"}`}
+            />
+            {errors[name] && <p className="text-red-600 text-sm">{errors[name]}</p>}
+          </div>
+        ))}
 
-        
-        <input
-          type="text"
-          name="name"
-          placeholder="Name"
-          value={formData.name}
-          onChange={handleChange}
-          required
-          className={`p-2 border rounded ${errors.name ? "border-red-600" : "border-gray-300"}`}
-        />
-        {errors.name && <p className="text-red-600 text-sm">{errors.name}</p>}
-
-        
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={formData.email}
-          onChange={handleChange}
-          required
-          className={`p-2 border rounded ${errors.email ? "border-red-600" : "border-gray-300"}`}
-        />
-        {errors.email && <p className="text-red-600 text-sm">{errors.email}</p>}
-
-        
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={formData.password}
-          onChange={handleChange}
-          required
-          className={`p-2 border rounded ${errors.password ? "border-red-600" : "border-gray-300"}`}
-        />
-        {errors.password && <p className="text-red-600 text-sm">{errors.password}</p>}
-
-        
-        <input
-          type="password"
-          name="confirmPassword"
-          placeholder="Confirm Password"
-          value={formData.confirmPassword}
-          onChange={handleChange}
-          required
-          className={`p-2 border rounded ${errors.confirmPassword ? "border-red-600" : "border-gray-300"}`}
-        />
-        {errors.confirmPassword && <p className="text-red-600 text-sm">{errors.confirmPassword}</p>}
-
-        
         <button
           type="submit"
-          className="bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 transition"
+          className="bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 transition disabled:bg-gray-400"
           disabled={Object.keys(errors).length > 0}
         >
           Register

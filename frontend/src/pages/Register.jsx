@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiUser, FiMail, FiLock, FiCheckCircle } from "react-icons/fi";
+import { FiUser, FiMail, FiLock, FiCheckCircle, FiAlertCircle } from "react-icons/fi";
 import axios from "axios";
 import bgImage from "../assets/auth-bg.jpg";
+import { Link } from "react-router-dom";
+
 
 const Register = () => {
   const navigate = useNavigate();
@@ -10,6 +12,7 @@ const Register = () => {
   const [errors, setErrors] = useState({});
   const [success, setSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const validateEmail = (email) => {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return "Invalid email format.";
@@ -17,8 +20,19 @@ const Register = () => {
     return null;
   };
 
-  const validatePassword = (password) =>
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(password);
+  const validatePassword = (password) => {
+    const conditions = [
+      { regex: /.{8,}/, message: "At least 8 characters" },
+      { regex: /[A-Z]/, message: "At least one uppercase letter" },
+      { regex: /[a-z]/, message: "At least one lowercase letter" },
+      { regex: /\d/, message: "At least one number" },
+      { regex: /[!@#$%^&*]/, message: "At least one special character (!@#$%^&*)" },
+    ];
+    return conditions.map((condition) => ({
+      ...condition,
+      valid: condition.regex.test(password),
+    }));
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -33,8 +47,9 @@ const Register = () => {
     }
 
     if (name === "password") {
-      if (!validatePassword(value)) {
-        newErrors.password = "Password must be 8+ chars, 1 uppercase, 1 lowercase, 1 number, 1 special character.";
+      const passwordChecks = validatePassword(value);
+      if (!passwordChecks.every((check) => check.valid)) {
+        newErrors.password = "Password must meet all requirements.";
       } else {
         delete newErrors.password;
       }
@@ -50,15 +65,25 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (Object.keys(errors).length === 0 && form.username && form.email && form.password && form.confirmPassword) {
-      try {
-        await axios.post("http://localhost:5000/api/auth/register", form);
-        setSuccess(true);
-        setTimeout(() => navigate("/dashboard"), 2000);
-      } catch (error) {
-        setErrorMessage(error.response?.data?.message || "Server error. Please try again later.");
-      }
+    setSuccess(false);
+    setErrorMessage("");
+    setLoading(true);
+
+    if (Object.keys(errors).length > 0 || !form.username || !form.email || !form.password || !form.confirmPassword) {
+      setErrorMessage("Please fill all fields correctly.");
+      setLoading(false);
+      return;
     }
+
+    try {
+      await axios.post("http://localhost:5000/api/auth/register", form);
+      setSuccess(true);
+      setTimeout(() => navigate("/dashboard"), 1500);
+    } catch (error) {
+      setErrorMessage(error.response?.data?.message || "Server error. Please try again later.");
+    }
+
+    setLoading(false);
   };
 
   return (
@@ -66,18 +91,18 @@ const Register = () => {
       className="flex min-h-screen justify-center items-center bg-cover bg-center"
       style={{ backgroundImage: `url(${bgImage})` }}
     >
-      <div className="bg-gray-900 bg-opacity-80 p-8 rounded-lg shadow-xl w-150 text-white">
+      <div className="bg-gray-900 bg-opacity-80 p-8 rounded-lg shadow-xl w-[600px] text-white">
         <h2 className="text-3xl font-bold text-center mb-6">Register</h2>
 
         {success && (
           <div className="bg-green-600 text-white p-3 rounded-lg text-center mb-4 flex items-center gap-2">
-            <FiCheckCircle className="text-xl" /> Registration Successful!
+            <FiCheckCircle className="text-xl" /> Registration Successful! Redirecting...
           </div>
         )}
 
         {errorMessage && (
           <div className="bg-red-600 text-white p-3 rounded-lg text-center mb-4 flex items-center gap-2">
-            <FiCheckCircle className="text-xl" /> {errorMessage}
+            <FiAlertCircle className="text-xl" /> {errorMessage}
           </div>
         )}
 
@@ -105,12 +130,14 @@ const Register = () => {
                 type="email"
                 name="email"
                 placeholder="Enter email"
-                className={`w-full bg-gray-700 p-3 pl-10 rounded-lg border ${errors.email ? "border-yellow-500" : "border-gray-600"} focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all`}
+                className={`w-full bg-gray-700 p-3 pl-10 rounded-lg border ${
+                  errors.email ? "border-red-500" : "border-gray-600"
+                } focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all`}
                 value={form.email}
                 onChange={handleChange}
               />
             </div>
-            {errors.email && <p className="text-yellow-500 text-sm mt-1">{errors.email}</p>}
+            {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
           </div>
 
           <div>
@@ -121,12 +148,18 @@ const Register = () => {
                 type="password"
                 name="password"
                 placeholder="Enter password"
-                className={`w-full bg-gray-700 p-3 pl-10 rounded-lg border ${errors.password ? "border-yellow-500" : "border-gray-600"} focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all`}
+                className="w-full bg-gray-700 p-3 pl-10 rounded-lg border border-gray-600 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
                 value={form.password}
                 onChange={handleChange}
               />
             </div>
-            {errors.password && <p className="text-yellow-500 text-sm mt-1">{errors.password}</p>}
+            <ul className="text-sm text-gray-400 mt-2">
+              {validatePassword(form.password).map((condition, index) => (
+                <li key={index} className={condition.valid ? "text-green-400" : "text-red-400"}>
+                  {condition.valid ? "✔" : "✖"} {condition.message}
+                </li>
+              ))}
+            </ul>
           </div>
 
           <div>
@@ -137,26 +170,30 @@ const Register = () => {
                 type="password"
                 name="confirmPassword"
                 placeholder="Confirm password"
-                className={`w-full bg-gray-700 p-3 pl-10 rounded-lg border ${errors.confirmPassword ? "border-yellow-500" : "border-gray-600"} focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all`}
+                className={`w-full bg-gray-700 p-3 pl-10 rounded-lg border ${
+                  errors.confirmPassword ? "border-red-500" : "border-gray-600"
+                } focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all`}
                 value={form.confirmPassword}
                 onChange={handleChange}
               />
             </div>
-            {errors.confirmPassword && <p className="text-yellow-500 text-sm mt-1">{errors.confirmPassword}</p>}
+            {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>}
           </div>
 
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-medium transition-all disabled:opacity-50"
-            disabled={Object.keys(errors).length > 0 || !form.username || !form.email || !form.password || !form.confirmPassword}
+            className="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-medium transition-all flex items-center justify-center disabled:opacity-50"
+            disabled={loading || Object.keys(errors).length > 0}
           >
-            Register
+            {loading ? <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full"></div> : "Register"}
           </button>
         </form>
-
-        <p className="text-gray-400 text-center mt-4">
-          Already have an account? <a href="/login" className="text-blue-400 hover:underline">Login</a>
-        </p>
+        <p className="text-center text-gray-400 mt-4">
+            Already have an account?{" "}
+             <Link to="/login" className="text-blue-500 hover:underline">
+               Login here
+            </Link>
+          </p>
       </div>
     </div>
   );

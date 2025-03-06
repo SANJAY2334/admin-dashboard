@@ -12,7 +12,7 @@ const Login = () => {
   const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [passwordValid, setPasswordValid] = useState(false);
-  
+
   useEffect(() => {
     if (localStorage.getItem("token")) {
       navigate("/dashboard");
@@ -27,7 +27,10 @@ const Login = () => {
       { regex: /\d/, message: "At least one number" },
       { regex: /[!@#$%^&*]/, message: "At least one special character (!@#$%^&*)" },
     ];
-    return conditions.map((condition) => ({ ...condition, valid: condition.regex.test(password) }));
+    return conditions.map((condition) => ({
+      ...condition,
+      valid: condition.regex.test(password),
+    }));
   };
 
   const handleLogin = async (e) => {
@@ -36,7 +39,7 @@ const Login = () => {
     setSuccessMessage("");
     setLoading(true);
 
-    if (form.email.endsWith("@gmail.com") || form.email.endsWith("@outlook.com")) {
+    if (!form.email.includes("@") || form.email.endsWith("@gmail.com") || form.email.endsWith("@outlook.com")) {
       setError("Only company emails are allowed.");
       setLoading(false);
       return;
@@ -51,12 +54,20 @@ const Login = () => {
 
     try {
       const response = await axios.post("http://localhost:5000/api/auth/login", form);
-      localStorage.setItem("token", response.data.token);
-      if (rememberMe) {
-        localStorage.setItem("rememberMe", form.email);
+
+      if (response.data.token) {
+        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("username", response.data.user?.username || "User");
+
+        if (rememberMe) {
+          localStorage.setItem("rememberMe", form.email);
+        }
+
+        setSuccessMessage("Login successful! Redirecting...");
+        setTimeout(() => navigate("/dashboard"), 1500);
+      } else {
+        setError("Invalid response from server.");
       }
-      setSuccessMessage("Login successful! Redirecting...");
-      setTimeout(() => navigate("/dashboard"), 2000);
     } catch (err) {
       setError(err.response?.data?.message || "Invalid email or password.");
     }
@@ -69,8 +80,8 @@ const Login = () => {
       className="flex min-h-screen justify-center items-center bg-cover bg-center"
       style={{ backgroundImage: `url(${bgImage})` }}
     >
-      <div className="bg-gray-900 bg-opacity-80 p-8 rounded-lg shadow-xl w-150 text-white">
-        <h2 className="text-3xl font-bold text-center mb-6">Login</h2>
+      <div className="bg-gray-900 bg-opacity-80 p-8 rounded-lg shadow-xl w-[600px] text-white">
+        <h2 className="text-3xl font-bold text-center mb-9">Login</h2>
 
         {error && (
           <div className="bg-red-500 text-white p-3 rounded-lg text-center flex items-center gap-2">
@@ -116,8 +127,8 @@ const Login = () => {
             </div>
             <ul className="text-sm text-gray-400 mt-2">
               {validatePassword(form.password).map((condition, index) => (
-                <li key={index} className={condition.valid ? "text-green-400" : "text-grey-400"}>
-                  {condition.valid ? "✔" : "🔘"} {condition.message}
+                <li key={index} className={condition.valid ? "text-green-400" : "text-red-400"}>
+                  {condition.valid ? "✔" : "✖"} {condition.message}
                 </li>
               ))}
             </ul>
@@ -139,8 +150,15 @@ const Login = () => {
             className="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-medium transition-all flex items-center justify-center disabled:opacity-50"
             disabled={loading || !passwordValid}
           >
-            {loading ? <span className="animate-spin border-2 border-white rounded-full w-5 h-5 border-t-transparent"></span> : "Login"}
+            {loading ? (
+              <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full"></div>
+            ) : (
+              "Login"
+            )}
           </button>
+          <p className="text-gray-400 text-center mt-2">
+            Don't have an account? <a href="/register" className="text-blue-400 hover:underline">Create one</a>
+          </p> 
         </form>
       </div>
     </div>
