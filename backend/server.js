@@ -7,15 +7,20 @@ import authRoutes from "./routes/auth.js";
 dotenv.config();
 const app = express();
 
+<<<<<<< HEAD
 // ✅ CORS Configuration
 const corsOptions = {
   origin: process.env.CLIENT_URL || "http://localhost:5173",
   credentials: true,
 };
 app.use(cors(corsOptions));
+=======
+
+app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+>>>>>>> a60d90c9f5f46c65fbd65d3ca34a8f47c0eac978
 app.use(express.json());
 
-// ✅ Routes
+
 app.use("/api/auth", authRoutes);
 app.get("/", (req, res) => res.send("API is running..."));
 
@@ -25,6 +30,10 @@ if (!process.env.MONGO_URI) {
   process.exit(1);
 }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> a60d90c9f5f46c65fbd65d3ca34a8f47c0eac978
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB Connected"))
@@ -33,6 +42,6 @@ mongoose
     process.exit(1);
   });
 
-// ✅ Start the Server
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

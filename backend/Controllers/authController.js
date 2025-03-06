@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -38,3 +39,17 @@ exports.login = async (req, res) => {
     res.status(500).json({ message: "Server error." });
   }
 };
+=======
+app.post("/api/auth/register", (req, res) => {
+    console.log("Received Data:", req.body);  
+    
+    const { username, name, email, password } = req.body;
+  
+    if (!username || !name || !email || !password) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+  
+    res.send("Received");  
+  });
+  
+>>>>>>> a60d90c9f5f46c65fbd65d3ca34a8f47c0eac978
