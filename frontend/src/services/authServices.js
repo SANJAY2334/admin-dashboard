@@ -14,14 +14,12 @@ export const registerUser = async (userData) => {
 
 export const loginUser = async (userData) => {
   try {
-    const { data } = await axios.post(`${API_URL}/login`, userData);
-    
-    // Store token (if using local storage)
-    if (data.token) localStorage.setItem("token", data.token);
-
+    const { data } = await axios.post("http://localhost:5000/api/auth/login", userData);
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("username", data.user?.username || "");
+    localStorage.setItem("email", data.user?.email || ""); // Store email properly
     return data;
   } catch (error) {
-    console.error("Login error:", error.response?.data || error.message);
-    throw error.response?.data || { message: "Login failed" };
+    throw error.response?.data?.message || "Login failed";
   }
 };

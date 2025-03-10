@@ -4,6 +4,12 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
+import EditProfile from "./pages/EditProfile";
+import Tickets from "./pages/Tickets";
+import ForgotPassword from "./pages/ForgotPassword";  // ✅ Import it
+import ResetPassword from "./pages/ResetPassword";
+import Settings from "./pages/Settings";
+
 
 const ProtectedRoute = ({ children }) => {
   const isAuthenticated = !!localStorage.getItem("token"); // Check if user is logged in
@@ -25,6 +31,15 @@ const App = () => {
         <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/edit-profile" element={<EditProfile />} />
+        <Route path="/tickets" element={<Tickets />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
+        
+        
+
+
         
         {/* Protected Routes */}
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />

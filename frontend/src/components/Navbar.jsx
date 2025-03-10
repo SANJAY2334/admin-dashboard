@@ -12,6 +12,7 @@ const Navbar = () => {
         <Logout /> {/* Use the Logout component for better functionality */}
       </div>
     </nav>
+    
   );
 };
 

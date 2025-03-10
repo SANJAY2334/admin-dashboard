@@ -4,20 +4,40 @@ import {
   FiHome,
   FiSettings,
   FiLogOut,
-  FiUsers,
   FiActivity,
-  FiUserPlus,
-  FiAlertCircle,
   FiUser,
   FiMenu,
+  FiAlertCircle,
+  FiBell,
 } from "react-icons/fi";
+import ChartComponent from "../components/ChartComponent";
+import CalendarWidget from "../components/CalendarWidget";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [userName, setUserName] = useState("User");
-  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const notifRef = useRef(null);
+
+  const [darkMode, setDarkMode] = useState(localStorage.getItem("theme") === "dark");
+
+  const toggleTheme = () => {
+    setDarkMode((prev) => {
+      const newTheme = !prev ? "dark" : "light";
+      localStorage.setItem("theme", newTheme);
+      return !prev;
+    });
+  };
+
+  const [notifications, setNotifications] = useState([
+    { id: 1, message: "New ticket assigned to you", type: "ticket", read: false },
+    { id: 2, message: "Server issue resolved", type: "system", read: true },
+  ]);
+
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -32,8 +52,11 @@ const Dashboard = () => {
     }
 
     const handleClickOutside = (event) => {
-      if (!dropdownRef.current?.contains(event.target)) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setDropdownOpen(false);
+      }
+      if (notifRef.current && !notifRef.current.contains(event.target)) {
+        setNotifOpen(false);
       }
     };
 
@@ -51,45 +74,37 @@ const Dashboard = () => {
     <div className="flex min-h-screen bg-gray-950 text-white">
       {/* Sidebar */}
       <aside
-        className={`${
-          sidebarOpen ? "w-80" : "w-20"
-        } bg-gray-900 p-6 shadow-lg transition-all duration-300 flex flex-col`}
+        className={`bg-gray-900 p-6 shadow-lg border-r border-gray-700 transition-all duration-300 ${
+          sidebarOpen ? "w-72" : "w-20"
+        }`}
       >
         {/* Toggle Button */}
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="mb-6 text-white flex items-center gap-2 p-2 rounded-lg hover:bg-gray-800 transition-all"
+          className="mb-6 flex items-center gap-3 p-2 rounded-lg hover:bg-gray-800 transition-all"
         >
           <FiMenu className="text-2xl" />
           {sidebarOpen && <span className="text-lg font-medium">Menu</span>}
         </button>
 
-        {/* Sidebar Content */}
-        <h2
-          className={`text-4xl font-bold text-center transition-all ${
-            !sidebarOpen && "hidden"
-          }`}
-        >
-          Dashboard
-        </h2>
-        <p
-          className={`text-center text-gray-400 text-lg mt-1 transition-all ${
-            !sidebarOpen && "hidden"
-          }`}
-        >
+        {/* Sidebar Navigation */}
+        <h2 className={`text-2xl font-bold text-center ${!sidebarOpen && "hidden"}`}>Dashboard</h2>
+        <p className={`text-center text-gray-400 mt-1 ${!sidebarOpen && "hidden"}`}>
           Welcome, <span className="text-white font-semibold">{userName}</span>
         </p>
 
-        <nav className="mt-8 space-y-4">
+        <nav className="mt-8 space-y-2">
           {[
-            { name: "Home", path: "/dashboard", icon: <FiHome /> },
+            { name: "Overview", path: "/dashboard", icon: <FiHome /> },
             { name: "Profile", path: "/profile", icon: <FiUser /> },
+            { name: "Tickets", path: "/tickets", icon: <FiActivity /> },
             { name: "Settings", path: "/settings", icon: <FiSettings /> },
+            
           ].map((item, index) => (
             <Link
               key={index}
               to={item.path}
-              className="flex items-center gap-4 px-5 py-4 text-lg font-medium rounded-lg hover:bg-gray-800 transition-all"
+              className="flex items-center gap-4 px-5 py-3 text-lg font-medium rounded-lg hover:bg-green-600 transition-all"
             >
               {item.icon}
               {sidebarOpen && <span>{item.name}</span>}
@@ -98,35 +113,76 @@ const Dashboard = () => {
         </nav>
       </aside>
 
-      
-      <main className="flex-1 p-12 bg-gray-100 text-gray-900 relative">
-        
+      {/* Main Content */}
+      <main className="flex-1 p-10 bg-gray-900 text-gray-200">
         <div className="flex justify-between items-center">
-          <h1 className="text-5xl font-bold">
-            Welcome Back, <span className="text-blue-600">{userName}!</span>
+          <h1 className="text-3xl font-bold">
+            Welcome Back, <span className="text-green-400">{userName}!</span>
           </h1>
 
-          
+          {/* Notification Bell */}
+          <div className="relative" ref={notifRef}>
+            <button
+              className="relative p-3 bg-gray-800 rounded-full hover:bg-gray-700"
+              onClick={() => setNotifOpen(!notifOpen)}
+            >
+              <FiBell className="text-xl text-white" />
+              {unreadCount > 0 && (
+                <span className="absolute top-1 right-1 bg-red-500 text-xs text-white px-2 py-1 rounded-full">
+                  {unreadCount}
+                </span>
+              )}
+            </button>
+
+            {/* Notifications Dropdown */}
+            {notifOpen && (
+              <div className="absolute right-0 mt-3 w-64 bg-gray-900 text-white shadow-lg rounded-lg border border-gray-700">
+                <div className="p-3 border-b border-gray-700 font-bold">Notifications</div>
+
+                {notifications.length > 0 ? (
+                  notifications.map((notif) => (
+                    <div
+                      key={notif.id}
+                      className={`p-3 border-b border-gray-800 ${
+                        notif.read ? "text-gray-400" : "text-white font-bold"
+                      }`}
+                    >
+                      {notif.message}
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-3 text-gray-400">No new notifications</div>
+                )}
+
+                <button
+                  onClick={() => setNotifications([])}
+                  className="w-full text-center text-red-400 py-2 hover:bg-gray-800 transition-all"
+                >
+                  Clear All
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Profile Dropdown */}
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="flex items-center gap-1 bg-gray-800 text-white px-3 py-3 rounded-lg hover:bg-gray-700 transition-all"
+              className="flex items-center gap-2 bg-gray-800 px-5 py-3 rounded-lg hover:bg-gray-700 transition-all"
             >
               <FiUser className="text-2xl" />
-              <span className="text-lg font-medium">{userName}</span>
+              <span className="text-lg">{userName}</span>
             </button>
 
+            {/* Dropdown Menu */}
             {dropdownOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white text-gray-900 rounded-lg shadow-lg overflow-hidden">
-                <Link
-                  to="/profile"
-                  className="flex items-center gap-3 px-5 py-2 hover:bg-gray-200 transition-all"
-                >
+              <div className="absolute right-0 mt-2 w-48 bg-gray-800 text-white rounded-lg shadow-lg border border-gray-700 overflow-hidden">
+                <Link to="/profile" className="flex items-center gap-3 px-5 py-3 hover:bg-gray-700 transition-all">
                   <FiUser className="text-lg" /> Profile
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-5 py-3 text-left hover:bg-gray-200 transition-all"
+                  className="w-full flex items-center gap-3 px-5 py-3 text-left hover:bg-gray-700 transition-all"
                 >
                   <FiLogOut className="text-lg" /> Logout
                 </button>
@@ -135,28 +191,15 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <p className="text-gray-600 mt-4 text-xl">Here’s an overview of your account.</p>
-
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-12 mt-20">
-          {[
-            { title: "Total Users", count: "1,230", color: "text-blue-600", icon: <FiUsers /> },
-            { title: "Active Sessions", count: "320", color: "text-green-600", icon: <FiActivity /> },
-            { title: "New Signups", count: "45", color: "text-orange-600", icon: <FiUserPlus /> },
-            { title: "Pending Requests", count: "8", color: "text-red-600", icon: <FiAlertCircle /> },
-          ].map((stat, idx) => (
-            <div
-              key={idx}
-              className="p-8 bg-white rounded-xl shadow-xl border border-gray-200 hover:shadow-2xl transform transition-all duration-300 hover:-translate-y-1 cursor-pointer flex items-center gap-6"
-            >
-              <div className={`text-5xl ${stat.color}`}>{stat.icon}</div>
-              <div>
-                <h3 className="text-xl font-semibold">{stat.title}</h3>
-                <p className="text-4xl font-bold mt-2">{stat.count}</p>
-              </div>
-            </div>
-          ))}
+        {/* Charts & Calendar */}
+        <h1 className="text-3xl font-bold text-white mt-10">Dashboard Analytics</h1>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+          <ChartComponent type="line" />
+          <ChartComponent type="bar" />
         </div>
+
+        <h1 className="text-3xl font-bold text-white mt-10">Upcoming Schedules</h1>
+        <CalendarWidget />
       </main>
     </div>
   );

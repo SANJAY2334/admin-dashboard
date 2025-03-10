@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FiAlertCircle, FiMail, FiLock, FiCheckCircle } from "react-icons/fi";
@@ -11,9 +11,11 @@ const Login = () => {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [passwordValid, setPasswordValid] = useState(false);
 
   useEffect(() => {
+    const savedEmail = localStorage.getItem("rememberMe");
+    if (savedEmail) setForm((prev) => ({ ...prev, email: savedEmail }));
+
     if (localStorage.getItem("token")) {
       navigate("/dashboard");
     }
@@ -33,20 +35,27 @@ const Login = () => {
     }));
   };
 
+  const passwordChecks = useMemo(() => validatePassword(form.password), [form.password]);
+  const isPasswordValid = passwordChecks.every((check) => check.valid);
+
+  const isCompanyEmail = (email) => {
+    const companyDomainRegex = /^[a-zA-Z0-9._%+-]+@(?!gmail\.com|outlook\.com)([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$/;
+    return companyDomainRegex.test(email);
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
     setSuccessMessage("");
     setLoading(true);
 
-    if (!form.email.includes("@") || form.email.endsWith("@gmail.com") || form.email.endsWith("@outlook.com")) {
+    if (!isCompanyEmail(form.email)) {
       setError("Only company emails are allowed.");
       setLoading(false);
       return;
     }
 
-    const passwordChecks = validatePassword(form.password);
-    if (!passwordChecks.every((check) => check.valid)) {
+    if (!isPasswordValid) {
       setError("Password does not meet the required conditions.");
       setLoading(false);
       return;
@@ -54,13 +63,14 @@ const Login = () => {
 
     try {
       const response = await axios.post("http://localhost:5000/api/auth/login", form);
-
       if (response.data.token) {
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("username", response.data.user?.username || "User");
 
         if (rememberMe) {
           localStorage.setItem("rememberMe", form.email);
+        } else {
+          localStorage.removeItem("rememberMe");
         }
 
         setSuccessMessage("Login successful! Redirecting...");
@@ -96,13 +106,14 @@ const Login = () => {
         )}
 
         <form onSubmit={handleLogin} className="space-y-5 mt-4">
+          {/* Email Input */}
           <div>
-            <label className="block text-gray-400">Email or Username</label>
+            <label className="block text-gray-400">Company Email</label>
             <div className="relative">
               <FiMail className="absolute top-3 left-3 text-gray-500" />
               <input
-                type="text"
-                placeholder="Enter email or username"
+                type="email"
+                placeholder="Enter your company email"
                 className="w-full bg-gray-700 p-3 pl-10 rounded-lg border border-gray-600 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
@@ -110,6 +121,7 @@ const Login = () => {
             </div>
           </div>
 
+          {/* Password Input */}
           <div>
             <label className="block text-gray-400">Password</label>
             <div className="relative">
@@ -119,14 +131,11 @@ const Login = () => {
                 placeholder="Enter password"
                 className="w-full bg-gray-700 p-3 pl-10 rounded-lg border border-gray-600 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
                 value={form.password}
-                onChange={(e) => {
-                  setForm({ ...form, password: e.target.value });
-                  setPasswordValid(validatePassword(e.target.value).every((check) => check.valid));
-                }}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
               />
             </div>
             <ul className="text-sm text-gray-400 mt-2">
-              {validatePassword(form.password).map((condition, index) => (
+              {passwordChecks.map((condition, index) => (
                 <li key={index} className={condition.valid ? "text-green-400" : "text-red-400"}>
                   {condition.valid ? "✔" : "✖"} {condition.message}
                 </li>
@@ -134,6 +143,7 @@ const Login = () => {
             </ul>
           </div>
 
+          {/* Remember Me Checkbox */}
           <div className="flex items-center gap-2">
             <input
               type="checkbox"
@@ -145,10 +155,11 @@ const Login = () => {
             <label htmlFor="rememberMe" className="text-gray-400 text-sm">Remember Me</label>
           </div>
 
+          {/* Login Button */}
           <button
             type="submit"
             className="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-medium transition-all flex items-center justify-center disabled:opacity-50"
-            disabled={loading || !passwordValid}
+            disabled={loading || !isPasswordValid}
           >
             {loading ? (
               <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full"></div>
@@ -156,13 +167,11 @@ const Login = () => {
               "Login"
             )}
           </button>
+
+          {/* Register Link */}
           <p className="text-gray-400 text-center mt-2">
             Don't have an account? <a href="/register" className="text-blue-400 hover:underline">Create one</a>
-<<<<<<< HEAD
-          </p> 
-=======
           </p>
->>>>>>> a60d90c9f5f46c65fbd65d3ca34a8f47c0eac978
         </form>
       </div>
     </div>

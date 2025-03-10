@@ -4,20 +4,19 @@ import { FiUser, FiMail, FiSettings, FiEdit2, FiArrowLeft } from "react-icons/fi
 
 const Profile = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState({ name: "", email: "", role: "" });
+  const [user, setUser] = useState({ name: "", email: "", role: "Yet to decide" });
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
       navigate("/login");
+      return;
     }
 
-    const storedUser = {
-      name: localStorage.getItem("username") || "John Doe",
-      email: localStorage.getItem("email")||"johndoe@example.com",
-      role: "Admin",
-    };
-    setUser(storedUser);
+    const username = localStorage.getItem("username") || "John Doe";
+    const email = localStorage.getItem("email") || "johndoe@example.com";
+
+    setUser({ name: username, email, role: "Yet to decide" });
   }, [navigate]);
 
   return (
@@ -61,7 +60,7 @@ const Profile = () => {
         </div>
 
         <button
-          onClick={() => alert("Edit Profile Coming Soon!")}
+          onClick={() => navigate("/edit-profile")}
           className="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-all"
         >
           <FiEdit2 /> Edit Profile
