@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Office-Dashboard
 
 
@@ -96,3 +97,6 @@ Further improve UI responsiveness and accessibility.
 
 This project is open-source and available under the MIT License.
 
+=======
+# admin-dashboard
+>>>>>>> origin/main
